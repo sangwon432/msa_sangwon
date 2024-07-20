@@ -1,0 +1,64 @@
+version: "3"
+services:
+
+  nginx:
+    image: nginx:stable-alpine
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+    networks:
+      - sangwon_network
+
+
+  user-service:
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - sangwon_network
+
+  product-service:
+    build:
+      context: ./product
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    networks:
+      - sangwon_network
+
+  order-service:
+    build:
+      context: ./order
+      dockerfile: Dockerfile
+    ports:
+      - '3002:3002'
+    networks:
+      - sangwon_network
+
+  postgres:
+    image: postgres:latest
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=sangwon_user
+      - POSTGRES_PASSWORD=sangwon_password
+      - POSTGRES_DB=sangwondb
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+
+networks:
+  sangwon_network:
+    driver: bridge
+
+volumes:
+  pg_data:
+    driver: local
